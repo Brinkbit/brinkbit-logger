@@ -7,6 +7,10 @@
     "test": "gulp test",
     "eslint-pre-commit": "./scripts/eslint-pre-commit"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brinkbit/brinkbit-logger.git"
+  },
   "keywords": [
     "brinkbit",
     "logger",
@@ -15,6 +19,10 @@
   ],
   "author": "Brinkbit",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Brinkbit/brinkbit-logger/issues"
+  },
+  "homepage": "https://github.com/Brinkbit/brinkbit-logger#readme",
   "dependencies": {
     "stack-trace": "0.0.9",
     "winston": "^2.2.0"
