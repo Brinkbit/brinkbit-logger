@@ -1,6 +1,7 @@
 'use strict';
 
 const winston = require( 'winston' );
+const morgan = require( 'morgan' );
 const stackTrace = require( 'stack-trace' );
 
 module.exports = config => {
@@ -37,35 +38,46 @@ module.exports = config => {
             colorize: true,
         }),
     };
-
+    const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
+    const morganFormat = transport === 'development' ? 'dev' : 'combined';
     const logger = new winston.Logger({
         transports: [
-            transports[c.transport || process.env.NODE_ENV] || transports.production,
+            transports[transport],
         ],
     });
 
     logger.setLevels( winston.config.syslog.levels );
 
-    logger.filters.push(( level, msg ) => {
-        const transport = c.transport || process.env.NODE_ENV;
-        if ( transport === 'debug' || transport === 'test' ) {
+    if ( transport === 'debug' || transport === 'test' ) {
+        logger.filters.push(( level, msg ) => {
             const callsite = stackTrace.get()[5];
             return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${c.__filename}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
-        }
-        return msg;
-    });
+        });
+    }
 
-    logger.rewriters.push(( level, msg, meta ) => {
-        // supress meta logging in development mode
-        const transport = c.transport || process.env.NODE_ENV;
-        if ( transport === 'development' ) {
+    if ( transport === 'development' ) {
+        logger.rewriters.push(() => {
             return {};
-        }
-        if ( transport !== 'debug' && transport !== 'test' ) {
+        });
+    }
+
+    if ( transport !== 'debug' && transport !== 'test' ) {
+        logger.rewriters.push(( level, msg, meta ) => {
             meta.filename = c.__filename;
-        }
-        return meta;
-    });
+            return meta;
+        });
+    }
+
+    if ( transport !== 'test' ) {
+        logger.middleware = morgan( morganFormat, { 'stream': {
+            write: ( message ) => {
+                logger.info( message );
+            },
+        } });
+    }
+    else {
+        logger.middleware = ( req, res, next ) => next();
+    }
 
     return logger;
 };
