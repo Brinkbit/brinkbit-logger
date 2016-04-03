@@ -44,7 +44,7 @@ module.exports = config => {
         ],
     });
 
-    logger.setLevels( winston.c.syslog.levels );
+    logger.setLevels( winston.config.syslog.levels );
 
     logger.filters.push(( level, msg ) => {
         const transport = c.transport || process.env.NODE_ENV;
