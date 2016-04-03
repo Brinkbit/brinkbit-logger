@@ -39,7 +39,7 @@ module.exports = config => {
         }),
     };
     const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
-    const morganFormat = transport === 'development' ? 'dev' : 'combined';
+    const morganFormat = transport === 'development' || transport === 'debug' ? 'dev' : 'combined';
     const logger = new winston.Logger({
         transports: [
             transports[transport],
@@ -51,7 +51,7 @@ module.exports = config => {
     if ( transport === 'debug' || transport === 'test' ) {
         logger.filters.push(( level, msg ) => {
             const callsite = stackTrace.get()[5];
-            return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${c.__filename}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
+            return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${callsite.getFileName()}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
         });
     }
 
@@ -60,10 +60,10 @@ module.exports = config => {
             return {};
         });
     }
-
-    if ( transport !== 'debug' && transport !== 'test' ) {
+    else if ( transport !== 'debug' && transport !== 'test' ) {
         logger.rewriters.push(( level, msg, meta ) => {
-            meta.filename = c.__filename;
+            if ( meta.isMiddleware ) delete meta.isMiddleware;
+            else meta.filename = c.__filename;
             return meta;
         });
     }
@@ -71,7 +71,7 @@ module.exports = config => {
     if ( transport !== 'test' ) {
         logger.middleware = morgan( morganFormat, { 'stream': {
             write: ( message ) => {
-                logger.info( message );
+                logger.info( message, { isMiddleware: true });
             },
         } });
     }
