@@ -49,7 +49,11 @@ module.exports = config => {
     logger.setLevels( winston.config.syslog.levels );
 
     if ( transport === 'debug' || transport === 'test' ) {
-        logger.filters.push(( level, msg ) => {
+        logger.filters.push(( level, msg, meta ) => {
+            if ( meta.isMiddleware ) {
+                delete meta.isMiddleware;
+                return msg;
+            }
             const callsite = stackTrace.get()[5];
             return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${callsite.getFileName()}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
         });
