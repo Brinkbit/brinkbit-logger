@@ -4,6 +4,7 @@ const winston = require( 'winston' );
 const morgan = require( 'morgan' );
 const stackTrace = require( 'stack-trace' );
 
+
 module.exports = config => {
     const c = config || {};
     const transports = {
@@ -40,7 +41,7 @@ module.exports = config => {
     };
     const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
     const morganFormat = transport === 'development' || transport === 'debug' ? 'dev' : 'combined';
-    const logger = new winston.Logger({
+    const logger = winston.loggers.get( __filename ) || winston.loggers.add( __filename, {
         transports: [
             transports[transport],
         ],
@@ -48,7 +49,7 @@ module.exports = config => {
 
     logger.setLevels( winston.config.syslog.levels );
 
-    if ( transport === 'debug' || transport === 'test' ) {
+    if ( transport === 'debug' ) {
         logger.filters.push(( level, msg, meta ) => {
             if ( meta.isMiddleware ) {
                 delete meta.isMiddleware;
