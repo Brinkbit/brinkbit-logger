@@ -1,11 +1,15 @@
 {
   "name": "brinkbit-logger",
-  "version": "0.1.0",
+  "version": "0.2.4",
   "description": "Winston logger for express applications",
   "main": "src/index.js",
   "scripts": {
     "test": "gulp test",
     "eslint-pre-commit": "./scripts/eslint-pre-commit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brinkbit/brinkbit-logger.git"
   },
   "keywords": [
     "brinkbit",
@@ -15,7 +19,12 @@
   ],
   "author": "Brinkbit",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Brinkbit/brinkbit-logger/issues"
+  },
+  "homepage": "https://github.com/Brinkbit/brinkbit-logger#readme",
   "dependencies": {
+    "morgan": "^1.7.0",
     "stack-trace": "0.0.9",
     "winston": "^2.2.0"
   },
@@ -27,6 +36,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
     "gulp": "^3.9.1",
-    "gulp-mocha": "^2.2.0"
+    "gulp-mocha": "^2.2.0",
+    "pre-commit": "^1.1.2"
   }
 }

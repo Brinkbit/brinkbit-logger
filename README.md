@@ -21,6 +21,13 @@ const logger = require( 'brinkbit-logger' )({ __filename });
 logger.info( 'just logging some stuff' );
 ```
 
+Morgan middleware is exposed for convenience .
+
+```javascript
+const app = require( 'express' )();
+app.use( logger.middleware );
+```
+
 Logging levels are configured following RFC5424
 
 ```javascript

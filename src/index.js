@@ -1,7 +1,9 @@
 'use strict';
 
 const winston = require( 'winston' );
+const morgan = require( 'morgan' );
 const stackTrace = require( 'stack-trace' );
+
 
 module.exports = config => {
     const c = config || {};
@@ -37,35 +39,50 @@ module.exports = config => {
             colorize: true,
         }),
     };
-
-    const logger = new winston.Logger({
+    const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
+    const morganFormat = transport === 'development' || transport === 'debug' ? 'dev' : 'combined';
+    const logger = winston.loggers.get( __filename ) || winston.loggers.add( __filename, {
         transports: [
-            transports[c.transport || process.env.NODE_ENV] || transports.production,
+            transports[transport],
         ],
     });
 
-    logger.setLevels( winston.c.syslog.levels );
+    logger.setLevels( winston.config.syslog.levels );
 
-    logger.filters.push(( level, msg ) => {
-        const transport = c.transport || process.env.NODE_ENV;
-        if ( transport === 'debug' || transport === 'test' ) {
+    if ( transport === 'debug' ) {
+        logger.filters.push(( level, msg, meta ) => {
+            if ( meta.isMiddleware ) {
+                delete meta.isMiddleware;
+                return msg;
+            }
             const callsite = stackTrace.get()[5];
-            return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${c.__filename}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
-        }
-        return msg;
-    });
+            return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${callsite.getFileName()}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
+        });
+    }
 
-    logger.rewriters.push(( level, msg, meta ) => {
-        // supress meta logging in development mode
-        const transport = c.transport || process.env.NODE_ENV;
-        if ( transport === 'development' ) {
+    if ( transport === 'development' ) {
+        logger.rewriters.push(() => {
             return {};
-        }
-        if ( transport !== 'debug' && transport !== 'test' ) {
-            meta.filename = c.__filename;
-        }
-        return meta;
-    });
+        });
+    }
+    else if ( transport !== 'debug' && transport !== 'test' ) {
+        logger.rewriters.push(( level, msg, meta ) => {
+            if ( meta.isMiddleware ) delete meta.isMiddleware;
+            else meta.filename = c.__filename;
+            return meta;
+        });
+    }
+
+    if ( transport !== 'test' ) {
+        logger.middleware = morgan( morganFormat, { 'stream': {
+            write: ( message ) => {
+                logger.info( message, { isMiddleware: true });
+            },
+        } });
+    }
+    else {
+        logger.middleware = ( req, res, next ) => next();
+    }
 
     return logger;
 };
