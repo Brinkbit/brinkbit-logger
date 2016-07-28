@@ -1,0 +1,8 @@
+.gitignore
+*.eslintrc
+test
+coverage
+.nyc_output
+scripts
+gulpfile.js
+*.logs
