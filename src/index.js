@@ -41,7 +41,7 @@ module.exports = config => {
     };
     const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
     const morganFormat = transport === 'development' || transport === 'debug' ? 'dev' : 'combined';
-    const logger = winston.loggers.get( __filename ) || winston.loggers.add( __filename, {
+    const logger = winston.loggers.get( __filename, {
         transports: [
             transports[transport],
         ],
