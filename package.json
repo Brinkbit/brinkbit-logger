@@ -1,6 +1,6 @@
 {
   "name": "brinkbit-logger",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Winston logger for express applications",
   "main": "src/index.js",
   "scripts": {
