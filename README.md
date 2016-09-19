@@ -52,7 +52,7 @@ The following levels are accepted:
 - `'production'` *(default)* - writes json to a log file without console output
 - `'debug'` - extremely verbose output to the console
 - `'development'` - reasonable output, designed for regular development usage. Negative performance impact
-- `'test'` - only prints out crit level or higher so you can focus on the console output of your tests
+- `'test'` - only prints out emerg level so you can focus on the console output of your tests
 
 ## Log File
 
