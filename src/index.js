@@ -33,7 +33,7 @@ module.exports = config => {
             colorize: true,
         }),
         test: new winston.transports.Console({
-            level: 'crit',
+            level: 'emerg',
             handleExceptions: true,
             json: false,
             colorize: true,
@@ -49,7 +49,7 @@ module.exports = config => {
 
     logger.setLevels( winston.config.syslog.levels );
 
-    if ( transport === 'debug' ) {
+    if ( transport === 'debug' && logger.filters < 1 ) {
         logger.filters.push(( level, msg, meta ) => {
             if ( meta.isMiddleware ) {
                 delete meta.isMiddleware;
@@ -60,12 +60,12 @@ module.exports = config => {
         });
     }
 
-    if ( transport === 'development' ) {
+    if ( transport === 'development' && logger.rewriters < 1 ) {
         logger.rewriters.push(() => {
             return {};
         });
     }
-    else if ( transport !== 'debug' && transport !== 'test' ) {
+    else if ( transport !== 'debug' && transport !== 'test' && logger.rewriters < 1 ) {
         logger.rewriters.push(( level, msg, meta ) => {
             if ( meta.isMiddleware ) delete meta.isMiddleware;
             else meta.filename = c.__filename;
