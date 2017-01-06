@@ -15,6 +15,13 @@ const expect = chai.expect;
 chai.use( chaiaspromised );
 chai.use( sinonchai );
 
+describe( 'confugration', function() {
+    it( 'should not crash when missing slack property', function() {
+        process.env.SLACK_HOOK = 'invalid';
+        require( '../src' )({ __filename: Math.random(), transport: 'debug' });
+    });
+});
+
 describe( '/debug', function() {
     it( 'should console log verbose message on debug', function( done ) {
         const logger = require( '../src' )({ __filename: Math.random(), transport: 'debug' });

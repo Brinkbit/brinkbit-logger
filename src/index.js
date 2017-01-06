@@ -6,9 +6,10 @@ const stackTrace = require( 'stack-trace' );
 const Slack = require( 'winston-slack-hook' );
 
 module.exports = config => {
-    const c = config || { slack: {} };
+    const c = config || {};
+    c.slack = c.slack || {};
     let production = [];
-    if (( c.slack && c.slack.hookUrl ) || process.env.SLACK_HOOK ) {
+    if ( c.slack.hookUrl || process.env.SLACK_HOOK ) {
         production = production.concat([
             new Slack({
                 name: 'standardHookSlack',
