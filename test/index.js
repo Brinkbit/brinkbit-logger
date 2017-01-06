@@ -15,7 +15,7 @@ const expect = chai.expect;
 chai.use( chaiaspromised );
 chai.use( sinonchai );
 
-describe( 'confugration', function() {
+describe( 'configuration', function() {
     it( 'should not crash when missing slack property', function() {
         process.env.SLACK_HOOK = 'invalid';
         require( '../src' )({ __filename: Math.random(), transport: 'debug' });
@@ -51,10 +51,14 @@ describe( '/development', function() {
 });
 
 describe( '/production', function() {
+    process.env.DOCKERCLOUD_CONTAINER_HOSTNAME = 'testHost';
+    process.env.DOCKERCLOUD_STACK_NAME = 'test-stack-name';
+
     it( 'should log crits to all three transports', function( done ) {
         const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
         let count = 0;
-        logger.on( 'logging', () => {
+        logger.on( 'logging', ( transport, level, msg ) => {
+            expect( msg ).to.equal( 'test-stack-name:testHost | testing critical messages' );
             count++;
             if ( count > 2 ) {
                 done();
@@ -71,8 +75,9 @@ describe( '/production', function() {
     it( 'should log info to standardSlack and file', function( done ) {
         const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
         let count = 0;
-        logger.on( 'logging', transport => {
+        logger.on( 'logging', ( transport, level, msg ) => {
             expect( transport ).to.have.property( 'name' ).and.match( /standardHookSlack|file/g );
+            expect( msg ).to.equal( 'test-stack-name:testHost | testing info messages' );
             count++;
             if ( count > 1 ) {
                 done();

@@ -29,7 +29,7 @@ module.exports = config => {
                 username: c.slack.username || process.env.SLACK_USERNAME,
                 prependLevel: false,
                 formatter: options => {
-                    return `${options.level === 'crit' ? '@all CRITICAL ERROR: ' : ''}${options.message}`;
+                    return `${options.level === 'crit' ? '@all CRITICAL ERROR: ' : ''} ${options.message}`;
                 },
             }),
         ]);
@@ -81,6 +81,14 @@ module.exports = config => {
             }
             const callsite = stackTrace.get()[5];
             return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${callsite.getFileName()}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
+        });
+    }
+    if ( transport === 'production' &&
+        process.env.DOCKERCLOUD_CONTAINER_HOSTNAME &&
+        process.env.DOCKERCLOUD_STACK_NAME &&
+        logger.filters < 1 ) {
+        logger.filters.push(( level, msg ) => {
+            return `${process.env.DOCKERCLOUD_STACK_NAME}:${process.env.DOCKERCLOUD_CONTAINER_HOSTNAME} | ${msg}`;
         });
     }
 
