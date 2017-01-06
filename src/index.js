@@ -13,7 +13,7 @@ module.exports = config => {
         production = production.concat([
             new Slack({
                 name: 'standardHookSlack',
-                level: 'debug',
+                level: 'info',
                 team: c.slack.team || process.env.SLACK_TEAM,
                 hookUrl: c.slack.hookUrl || process.env.SLACK_HOOK,
                 channel: c.slack.channel || process.env.SLACK_CHANNEL,

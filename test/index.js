@@ -63,12 +63,8 @@ describe( '/production', function() {
         logger.crit( 'testing critical messages' );
     });
 
-    it( 'should log debugs to standardSlack', function( done ) {
+    it( 'should not log debugs to standardSlack', function() {
         const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
-        logger.on( 'logging', transport => {
-            expect( transport.name ).to.equal( 'standardHookSlack' );
-            done();
-        });
         logger.debug( 'testing debug messages' );
     });
 
