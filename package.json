@@ -1,6 +1,6 @@
 {
   "name": "brinkbit-logger",
-  "version": "0.3.2",
+  "version": "0.4.2",
   "description": "Winston logger for express applications",
   "main": "src/index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "morgan": "^1.7.0",
     "stack-trace": "0.0.9",
     "winston": "^2.3.0",
+    "winston-papertrail": "^1.0.4",
     "winston-slack-hook": "^0.2.0"
   },
   "pre-commit": [
