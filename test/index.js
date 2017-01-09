@@ -40,15 +40,16 @@ describe( 'brinkbit-logger', function() {
     });
 
     describe( '/development', function() {
-        it( 'should console log just the message on debug', function( done ) {
+        it( 'should simulate production on development', function( done ) {
             const logger = require( '../src' )({ __filename: Math.random(), transport: 'development' });
             logger.on( 'logging', ( transport, level, msg, meta ) => {
                 expect( transport ).to.have.property( 'name' ).and.equal( 'console' );
                 expect( level ).to.equal( 'info' );
                 expect( msg ).to.equal( 'message text' );
-                expect( meta ).to.deep.equal({});
+                expect( meta ).to.deep.equal({ data: 'some metadata' });
                 done();
             });
+            logger.debug( 'hidden', { data: 'hidden' });
             logger.info( 'message text', { data: 'some metadata' });
         });
     });

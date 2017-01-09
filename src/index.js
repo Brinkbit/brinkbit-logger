@@ -53,12 +53,14 @@ module.exports = config => {
         debug: [new winston.transports.Console({
             level: 'debug',
             handleExceptions: false,
+            prettyPrint: true,
             json: false,
             colorize: true,
         })],
         development: [new winston.transports.Console({
-            level: 'debug',
+            level: 'info',
             handleExceptions: true,
+            prettyPrint: true,
             json: false,
             colorize: true,
         })],
@@ -70,7 +72,7 @@ module.exports = config => {
         })],
     };
     const transport = transports[c.transport || process.env.NODE_ENV] ? c.transport || process.env.NODE_ENV : 'production';
-    const morganFormat = transport === 'development' || transport === 'debug' ? 'dev' : 'short';
+    const morganFormat = transport === 'debug' ? 'dev' : 'short';
     const logger = winston.loggers.get( c.__filename, {
         transports: transports[transport],
     });
@@ -78,25 +80,14 @@ module.exports = config => {
     logger.setLevels( winston.config.syslog.levels );
 
     if ( transport === 'debug' && logger.filters < 1 ) {
-        logger.filters.push(( level, msg, meta ) => {
-            if ( meta.isMiddleware ) {
-                delete meta.isMiddleware;
-                return msg;
-            }
+        logger.filters.push(( level, msg ) => {
             const callsite = stackTrace.get()[5];
             return `"${msg}"   at ${callsite.getFunctionName() || '<anonymous>'} (${callsite.getFileName()}:${callsite.getLineNumber()}:${callsite.getColumnNumber()})`;
         });
     }
 
-    if ( transport === 'development' && logger.rewriters < 1 ) {
-        logger.rewriters.push(() => {
-            return {};
-        });
-    }
-    else if ( transport === 'production' && logger.rewriters < 1 ) {
+    if ( transport === 'production' && logger.rewriters < 1 ) {
         logger.rewriters.push(( level, msg, meta ) => {
-            if ( meta.isMiddleware ) delete meta.isMiddleware;
-            else meta.filename = c.__filename;
             if ( process.env.DOCKERCLOUD_CONTAINER_HOSTNAME ) meta.containerName = process.env.DOCKERCLOUD_CONTAINER_HOSTNAME;
             if ( process.env.DOCKERCLOUD_SERVICE_HOSTNAME ) meta.serviceName = process.env.DOCKERCLOUD_SERVICE_HOSTNAME;
             if ( process.env.DOCKERCLOUD_STACK_NAME ) meta.stackName = process.env.DOCKERCLOUD_STACK_NAME;
@@ -107,7 +98,7 @@ module.exports = config => {
     if ( transport !== 'test' ) {
         logger.middleware = morgan( morganFormat, { stream: {
             write: ( message ) => {
-                logger.info( message, { isMiddleware: true });
+                logger.info( message.slice( 0, -1 ), { isMiddleware: true });
             },
         } });
     }
