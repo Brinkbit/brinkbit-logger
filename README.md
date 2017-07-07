@@ -13,12 +13,19 @@ npm i --save brinkbit-logger
 
 # Usage
 
-Every instance expects to be passed a filename for easy performant context.
-
 ```javascript
-const logger = require( 'brinkbit-logger' )({ __filename });
+const logger = require( 'brinkbit-logger' ).configure();
 
 logger.info( 'just logging some stuff' );
+```
+
+Optionally pass an id for retrieval later:
+
+```javascript
+const brinkbitLogger = require( 'brinkbit-logger' );
+// default id is 'brinkbit'
+brinkbitLogger.configure({ id: 'logger1' });
+const logger = brinkbitLogger.get( 'logger1' );
 ```
 
 Morgan middleware is exposed for convenience .
@@ -40,7 +47,7 @@ The brinkbit-logger is intended to be configured using environment variables.
 However you can override the global configuration on a per-instance basis like so:
 
 ```javascript
-const logger = require( 'brinkbit-logger' )({ __filename, logFile: 'customLogFile.log' });
+const logger = require( 'brinkbit-logger' ).configure({ logFile: 'customLogFile.log' });
 ```
 
 ## Transport
@@ -51,7 +58,7 @@ By default, the transport type is configured based on the `NODE_ENV` environment
 Optionally override the global configuration on a per-instance basis like so:
 
 ```javascript
-const logger = require( 'brinkbit-logger' )({ __filename, transport: 'debug' });
+const logger = require( 'brinkbit-logger' ).configure({ transport: 'debug' });
 ```
 
 The following levels are accepted:
