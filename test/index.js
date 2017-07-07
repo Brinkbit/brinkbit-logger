@@ -1,5 +1,3 @@
-'use strict';
-
 const chai = require( 'chai' );
 const chaiaspromised = require( 'chai-as-promised' );
 const sinon = require( 'sinon' );
@@ -21,17 +19,25 @@ describe( 'brinkbit-logger', function() {
     describe( 'configuration', function() {
         it( 'should not crash when missing slack property', function() {
             process.env.SLACK_HOOK = 'invalid';
-            require( '../src' )({ __filename: Math.random(), transport: 'debug' });
+            require( '../src' ).configure({ id: Math.random(), transport: 'debug' });
+        });
+    });
+
+    describe( 'get', function() {
+        it( 'should return the configured logger', function() {
+            const logger = require( '../src' );
+            const configured = logger.configure({ id: '0', transport: 'debug' });
+            expect( logger.get( '0' )).to.equal( configured );
         });
     });
 
     describe( '/debug', function() {
         it( 'should console log verbose message on debug', function( done ) {
-            const logger = require( '../src' )({ __filename: Math.random(), transport: 'debug' });
+            const logger = require( '../src' ).configure({ id: Math.random(), transport: 'debug' });
             logger.on( 'logging', ( transport, level, msg, meta ) => {
                 expect( transport ).to.have.property( 'name' ).and.equal( 'console' );
                 expect( level ).to.equal( 'debug' );
-                expect( msg ).to.match( /\"message\stext\"\s\s\sat\s\<anonymous\>\s\(/gi );
+                expect( msg ).to.match( /"message\stext"\s\s\sat\s<anonymous>\s\(/gi );
                 expect( meta ).to.deep.equal({ data: 'some metadata' });
                 done();
             });
@@ -41,7 +47,7 @@ describe( 'brinkbit-logger', function() {
 
     describe( '/development', function() {
         it( 'should simulate production on development', function( done ) {
-            const logger = require( '../src' )({ __filename: Math.random(), transport: 'development' });
+            const logger = require( '../src' ).configure({ id: Math.random(), transport: 'development' });
             logger.on( 'logging', ( transport, level, msg, meta ) => {
                 expect( transport ).to.have.property( 'name' ).and.equal( 'console' );
                 expect( level ).to.equal( 'info' );
@@ -61,7 +67,7 @@ describe( 'brinkbit-logger', function() {
         process.env.DOCKERCLOUD_STACK_NAME = 'test-stack-name';
 
         it( 'should log crits to all three transports', function( done ) {
-            const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
+            const logger = require( '../src' ).configure( R.merge({ id: Math.random(), transport: 'production' }, config ));
             logger.transports.Papertrail.on( 'connect', () => {
                 let count = 0;
                 logger.on( 'logging', ( transport, level, msg ) => {
@@ -76,12 +82,12 @@ describe( 'brinkbit-logger', function() {
         });
 
         it( 'should not log debugs to standardSlack', function() {
-            const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
+            const logger = require( '../src' ).configure( R.merge({ id: Math.random(), transport: 'production' }, config ));
             logger.debug( 'testing debug messages' );
         });
 
         it( 'should log info to Papertrail and file', function( done ) {
-            const logger = require( '../src' )( R.merge({ __filename: Math.random(), transport: 'production' }, config ));
+            const logger = require( '../src' ).configure( R.merge({ id: Math.random(), transport: 'production' }, config ));
             logger.transports.Papertrail.on( 'connect', () => {
                 let count = 0;
                 logger.on( 'logging', ( transport, level, msg ) => {
@@ -99,7 +105,7 @@ describe( 'brinkbit-logger', function() {
 
     describe( '/test', function() {
         it( 'should not crit anything', function( done ) {
-            const logger = require( '../src' )({ __filename: Math.random(), transport: 'test' });
+            const logger = require( '../src' ).configure({ id: Math.random(), transport: 'test' });
             const spy = sinon.spy();
             logger.on( 'logging', spy );
             logger.crit( 'should crit verbose message and standard meta' );
@@ -110,7 +116,7 @@ describe( 'brinkbit-logger', function() {
         });
 
         it( 'should console log message on emergency', function( done ) {
-            const logger = require( '../src' )({ __filename: Math.random(), transport: 'test' });
+            const logger = require( '../src' ).configure({ id: Math.random(), transport: 'test' });
             logger.on( 'logging', ( transport, level, msg, meta ) => {
                 expect( transport ).to.have.property( 'name' ).and.equal( 'console' );
                 expect( level ).to.equal( 'emerg' );
@@ -124,7 +130,7 @@ describe( 'brinkbit-logger', function() {
 
     describe( 'middleware', function() {
         it( 'should console log requests', function( done ) {
-            const logger = require( '../src' )({ __filename: Math.random(), transport: 'debug' });
+            const logger = require( '../src' ).configure({ id: Math.random(), transport: 'debug' });
             const middleware = logger.middleware;
             logger.on( 'logging', ( transport, level, msg ) => {
                 expect( transport ).to.have.property( 'name' ).and.equal( 'console' );
@@ -152,17 +158,17 @@ describe( 'brinkbit-logger', function() {
         process.env.NODE_ENV = 'test';
 
         it( 'should not info anything', function() {
-            const logger = require( '../src' )({ __filename: Math.random() });
+            const logger = require( '../src' ).configure({ id: Math.random() });
             logger.info( 'should not info anything' );
         });
 
         it( 'should not error anything', function() {
-            const logger = require( '../src' )({ __filename: Math.random() });
+            const logger = require( '../src' ).configure({ id: Math.random() });
             logger.info( 'should not error anything' );
         });
 
         it( 'should crit verbose message and standard meta', function() {
-            const logger = require( '../src' )({ __filename: Math.random() });
+            const logger = require( '../src' ).configure({ id: Math.random() });
             logger.crit( 'should crit verbose message and standard meta' );
         });
     });
